@@ -20,11 +20,14 @@ package com.tc.voter;
 
 public interface VoterManager {
 
+  long HEARTBEAT_RESPONSE = 0;
+  long INVALID_VOTER_RESPONSE = -1;
+
   /**
    * Get registered with a server using the provided id.
    *
    * @param id voter id
-   * @return the current term of the server
+   * @return the current term of the server. -1 if the registration fails.
    */
   long registerVoter(String id);
 
@@ -53,17 +56,6 @@ public interface VoterManager {
    * @param id the voter id
    */
   boolean vetoVote(String id);
-
-
-  /**
-   *
-   * Try and reconnect with the server after a disconnect.
-   * If the reconnect attempt fails then the voter must try to re-register with the server.
-   *
-   * @param id voter id
-   * @return the current term of the server if the reconnect succeeded. Else -1.
-   */
-  boolean reconnect(String id);
 
   /**
    * De-register the voter with the given id from the server.
