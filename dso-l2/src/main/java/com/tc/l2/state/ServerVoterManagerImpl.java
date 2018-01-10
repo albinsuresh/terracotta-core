@@ -83,7 +83,7 @@ public class ServerVoterManagerImpl extends AbstractTerracottaMBean implements S
   }
 
   boolean canAcceptVoter() {
-    return voters.entrySet().stream()
+    return !electionInProgress && voters.entrySet().stream()
         .filter((entry) -> {
           if (timeSource.currentTimeMillis() - entry.getValue() < VOTEBEAT_TIMEOUT) {
             return true;
@@ -129,7 +129,19 @@ public class ServerVoterManagerImpl extends AbstractTerracottaMBean implements S
     String[] split = idTerm.split(":");
     return vote(split[0], Long.parseLong(split[1]));
   }
-
+  
+  @Override
+  public int getRegisteredVoters() {
+    return (int)voters.entrySet().stream()
+        .filter((entry) -> {
+          if (timeSource.currentTimeMillis() - entry.getValue() < VOTEBEAT_TIMEOUT) {
+            return true;
+          }
+          voters.remove(entry.getKey());
+          return false;
+        })
+        .count();
+    }
 
   @Override
   public int getVoteCount() {
@@ -157,8 +169,9 @@ public class ServerVoterManagerImpl extends AbstractTerracottaMBean implements S
   }
 
   @Override
-  public void endVoting() {
+  public long endVoting() {
     electionInProgress = false;
+    return this.electionTerm;
   }
 
   @Override

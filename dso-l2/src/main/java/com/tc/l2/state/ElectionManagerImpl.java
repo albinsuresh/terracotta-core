@@ -320,6 +320,11 @@ public class ElectionManagerImpl implements ElectionManager {
   public long getElectionTime() {
     return electionTime;
   }
+  
+  @Override
+  public boolean isElectionComplete() {
+    return votes.size() == this.expectedServers;
+   }
 
   private static void debugInfo(String message) {
     logger.debug(message);

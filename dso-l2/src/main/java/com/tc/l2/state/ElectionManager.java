@@ -35,4 +35,6 @@ public interface ElectionManager {
   public void reset(Enrollment winner);
 
   public long getElectionTime();
+  
+  public boolean isElectionComplete();
 }

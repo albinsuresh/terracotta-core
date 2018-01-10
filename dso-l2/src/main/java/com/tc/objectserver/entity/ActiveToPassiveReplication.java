@@ -146,7 +146,9 @@ public class ActiveToPassiveReplication implements PassiveReplicationBroker, Gro
    * @param newNode
    */
   private void executePassiveSync(final NodeID newNode) {
-    this.consistencyMgr.requestTransition(ServerMode.ACTIVE, ConsistencyManager.Transition.ADD_PASSIVE);
+    if (!this.consistencyMgr.requestTransition(ServerMode.ACTIVE, newNode, ConsistencyManager.Transition.ADD_PASSIVE)) {
+      this.serverCheck.zapNode(newNode, L2HAZapNodeRequestProcessor.SPLIT_BRAIN, "unable to verify active");
+    }
     passiveSyncPool.execute(new Runnable() {
       @Override
       public void run() {    
@@ -262,32 +264,31 @@ public class ActiveToPassiveReplication implements PassiveReplicationBroker, Gro
     return waiter;
   }
 
-  public void removePassive(NodeID nodeID) {
-// first remove it from the list of passive nodes so that anything sending new messages 
-// will have to remove it from the list of nodes to send to
-    passiveNodes.remove(nodeID);
-//  acknowledge all the messages for this node because it is gone, this may result in 
-//  a double ack locally but that is ok.  acknowledge is loose and can tolerate it. 
-    if (activated) {
-//  remove the passive node from the sender first.  nothing else is going out
-      this.replicationSender.removePassive(nodeID);
-      removeWaiters(nodeID);
-    }
-  }
-  
-  private void removeWaiters(NodeID nodeID) {
+  private void removePassive(NodeID nodeID) {
     passiveSyncPool.execute(()->{
-      while (!consistencyMgr.requestTransition(ServerMode.ACTIVE, ConsistencyManager.Transition.REMOVE_PASSIVE)) {
+      while (!consistencyMgr.requestTransition(ServerMode.ACTIVE, nodeID, ConsistencyManager.Transition.REMOVE_PASSIVE)) {
         try {
           TimeUnit.SECONDS.sleep(2);
         } catch (InterruptedException ie) {
           logger.info("interrupted while waiting for permission to remove node");
         }
       }
-        // This is a an unexpected kind of completion.
-      boolean isNormalComplete = false;
-      waiters.forEach((key, value)->internalAckCompleted(key, nodeID, null,isNormalComplete));
+// first remove it from the list of passive nodes so that anything sending new messages 
+// will have to remove it from the list of nodes to send to
+      passiveNodes.remove(nodeID);
+//  acknowledge all the messages for this node because it is gone, this may result in 
+//  a double ack locally but that is ok.  acknowledge is loose and can tolerate it. 
+      if (activated) {
+  //  remove the passive node from the sender first.  nothing else is going out
+        this.replicationSender.removePassive(nodeID);
+        removeWaiters(nodeID);
+      }
     });
+  }
+  
+  private void removeWaiters(NodeID nodeID) {      // This is a an unexpected kind of completion.
+    boolean isNormalComplete = false;
+    waiters.forEach((key, value)->internalAckCompleted(key, nodeID, null,isNormalComplete));
   }
 
   @Override

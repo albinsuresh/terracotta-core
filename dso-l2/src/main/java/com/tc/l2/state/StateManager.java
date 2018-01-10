@@ -59,6 +59,8 @@ public interface StateManager {
 
   public void cleanupKnownServers();
   
+  public boolean isElectionComplete();
+  
   public static ServerMode convert(State state) {
     if (state == null) {
       return null;
