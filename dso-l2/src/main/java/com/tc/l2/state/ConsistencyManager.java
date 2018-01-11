@@ -18,6 +18,9 @@
  */
 package com.tc.l2.state;
 
+import com.tc.net.NodeID;
+import org.terracotta.config.TcConfig;
+
 public interface ConsistencyManager {
   
   public enum Transition {
@@ -27,5 +30,20 @@ public interface ConsistencyManager {
     ADD_PASSIVE
   }
 
-  boolean requestTransition(ServerMode mode, Transition newMode) throws IllegalStateException;
+  boolean requestTransition(ServerMode mode, NodeID sourceNode, Transition newMode) throws IllegalStateException;
+  
+  static int parseVoteCount(TcConfig config) {
+    try {
+      if (config.getFailoverPriority().getAvailability() != null) {
+        return 0;
+      }
+    } catch (NullPointerException npe) {
+      return 0;
+    }
+    try {
+      return config.getFailoverPriority().getConsistency().getVoter().getCount();
+    } catch (NullPointerException npe) {
+      return 1;
+    }
+  }
 }

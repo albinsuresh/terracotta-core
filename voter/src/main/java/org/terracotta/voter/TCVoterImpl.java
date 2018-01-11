@@ -28,7 +28,7 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
 
-import static com.tc.voter.VoterManager.TIMEOUT_RESPONSE;
+//import static com.tc.voter.VoterManager.TIMEOUT_RESPONSE;
 import static com.tc.voter.VoterManager.HEARTBEAT_RESPONSE;
 import static com.tc.voter.VoterManager.INVALID_VOTER_RESPONSE;
 import static java.util.stream.Collectors.toList;
@@ -128,15 +128,15 @@ public class TCVoterImpl implements TCVoter {
             } else if (beatResponse == INVALID_VOTER_RESPONSE) {
               LOGGER.info("Server rejected this voter as invalid. Attempting to re-register with the cluster.");
               break;
-            } else if (beatResponse == TIMEOUT_RESPONSE) {
-              LOGGER.info("Request timed-out. Attempting to reconnect to: {}", hostPort);
-              voterManager.close();
-              voterManager.connect(hostPort);
-              LOGGER.info("Reconnected to: {}", hostPort);
-              beatResponse = voterManager.registerVoter(id);
-              if (beatResponse > 0) {
-                beatResponse = voterManager.heartbeat(id);
-              }
+//            } else if (beatResponse == TIMEOUT_RESPONSE) {
+//              LOGGER.info("Request timed-out. Attempting to reconnect to: {}", hostPort);
+//              voterManager.close();
+//              voterManager.connect(hostPort);
+//              LOGGER.info("Reconnected to: {}", hostPort);
+//              beatResponse = voterManager.registerVoter(id);
+//              if (beatResponse > 0) {
+//                beatResponse = voterManager.heartbeat(id);
+//              }
             } else {
               LOGGER.error("Unexpected response received: {}", beatResponse);
               break;
@@ -169,8 +169,8 @@ public class TCVoterImpl implements TCVoter {
     ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger("root");
     logger.setLevel(Level.INFO);
     TCVoter voter = new TCVoterImpl();
-//    voter.vetoVote("localhost:9410");
-    voter.register("foo", "localhost:9410", "localhost:9510");
+    voter.vetoVote("localhost:9410");
+//    voter.register("foo", "localhost:9410", "localhost:9510");
   }
 
 }

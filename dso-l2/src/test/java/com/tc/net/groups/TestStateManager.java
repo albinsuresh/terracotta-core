@@ -24,7 +24,6 @@ import com.tc.l2.state.ServerMode;
 import com.tc.l2.state.StateChangeListener;
 import com.tc.l2.state.StateManager;
 import com.tc.net.NodeID;
-import com.tc.util.State;
 
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -109,4 +108,9 @@ public class TestStateManager implements StateManager {
     return false;
   }
 
+  @Override
+  public boolean isElectionComplete() {
+    return true;
+  }
+  
 }

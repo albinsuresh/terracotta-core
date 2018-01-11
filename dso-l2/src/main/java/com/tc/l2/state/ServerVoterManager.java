@@ -41,6 +41,12 @@ public interface ServerVoterManager extends VoterManager, TerracottaMBean {
    * @return the total number of votes received so far
    */
   int getVoteCount();
+  
+    /**
+   *
+   * @return the total number of registered voters
+   */
+  int getRegisteredVoters();
 
   /**
    *
@@ -51,5 +57,5 @@ public interface ServerVoterManager extends VoterManager, TerracottaMBean {
   /**
    * Notify all voters to stop voting.
    */
-  void endVoting();
+  long endVoting();
 }

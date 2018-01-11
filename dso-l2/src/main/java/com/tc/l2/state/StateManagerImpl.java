@@ -158,7 +158,8 @@ public class StateManagerImpl implements StateManager {
         boolean rerun = false;
         if (nodeid == myNodeID) {
           debugInfo("Won Election, moving to active state. myNodeID/winner=" + myNodeID);
-          if (this.availabilityMgr.requestTransition(this.state, ConsistencyManager.Transition.MOVE_TO_ACTIVE)) {
+          if (this.electionMgr.isElectionComplete() || 
+              this.availabilityMgr.requestTransition(this.state, nodeid, ConsistencyManager.Transition.MOVE_TO_ACTIVE)) {
             moveToActiveState();
           } else {
             logger.info("rerunning election because " + nodeid + " not allowed to transition");
@@ -338,6 +339,11 @@ public class StateManagerImpl implements StateManager {
 
   public boolean isPassiveUnitialized() {
     return (state == ServerMode.UNINITIALIZED);
+  }
+  
+  @Override
+  public boolean isElectionComplete() {
+    return this.electionMgr.isElectionComplete();
   }
 
   @Override
